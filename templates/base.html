@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI Roadmap{% endblock %}</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            50: '#f5f7ff',
+                            100: '#ebf0fe',
+                            600: '#4f46e5', // Indigo
+                            700: '#4338ca',
+                            900: '#1e1b4b',
+                        }
+                    },
+                    animation: {
+                        'subtle-float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        .asteriskField {
+        display: none !important;
+        }
+
+
+        @layer base {
+            body { @apply bg-[#fcfcfd] text-slate-900 antialiased; }
+        }
+        @layer components {
+            .nav-link { @apply text-sm font-medium text-slate-600 hover:text-brand-600 transition-colors duration-200; }
+            .btn-primary { @apply bg-brand-600 text-white px-5 py-2.5 rounded-full font-semibold text-sm hover:bg-brand-700 hover:shadow-lg hover:shadow-brand-600/20 transition-all duration-300 active:scale-95; }
+            .btn-secondary { @apply bg-white text-slate-700 px-5 py-2.5 rounded-full font-semibold text-sm border border-slate-200 hover:bg-slate-50 transition-all duration-300; }
+            .glass-card { @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]; }
+        }
+        /* Кастомный скроллбар */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a5b4fc; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Фоновые градиенты (Аура) -->
+    <div class="fixed inset-0 z-[-1] pointer-events-none overflow-hidden">
+        <div class="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-100/40 blur-[120px] animate-subtle-float"></div>
+        <div class="absolute bottom-[-5%] left-[-5%] w-[40%] h-[40%] rounded-full bg-blue-50/50 blur-[100px]"></div>
+    </div>
+
+    <!-- Навигация -->
+    <header class="sticky top-0 z-50 w-full border-b border-slate-200/60 bg-white/80 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex h-16 items-center justify-between">
+                
+                <!-- Логотип -->
+                <div class="flex items-center gap-8">
+                    <a href="{% url 'roadmap_list' %}" class="flex items-center gap-2.5 group">
+                        <div class="relative">
+                            <div class="absolute -inset-1 bg-gradient-to-r from-brand-600 to-violet-500 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                            <div class="relative bg-white p-1.5 rounded-lg border border-slate-100">
+                                <svg class="w-6 h-6 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            </div>
+                        </div>
+                        <span class="text-xl font-extrabold tracking-tight text-slate-900">
+                            AI<span class="text-brand-600">Roadmap</span>
+                        </span>
+                    </a>
+
+                    <!-- Десктопное меню -->
+                    <nav class="hidden md:flex items-center gap-6">
+                        <a href="{% url 'roadmap_list' %}" class="nav-link">Все курсы</a>
+                        <a href="#" class="nav-link">Сообщество</a>
+                    </nav>
+                </div>
+
+                <!-- Блок авторизации -->
+                <div class="flex items-center gap-3">
+                    {% if user.is_authenticated %}
+                        <div class="hidden sm:flex flex-col items-end mr-2">
+                            <span class="text-xs font-bold text-slate-900 leading-none">{{ user.username }}</span>
+                            <span class="text-[10px] font-medium text-brand-600 uppercase tracking-widest mt-1">Lvl. {{ user.profile.points|default:"0" }}</span>
+                        </div>
+                        
+                        <!-- Мини-профиль -->
+                        <div class="relative group">
+                            <button class="flex items-center gap-2 p-1 rounded-full border border-slate-200 bg-white hover:border-brand-300 transition-all">
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-600 to-violet-500 text-white flex items-center justify-center font-bold text-xs">
+                                    {{ user.username|slice:":1"|upper }}
+                                </div>
+                            </button>
+                            <!-- Выпадающее меню (упрощенное) -->
+                            <div class="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-2xl shadow-xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 translate-y-2 group-hover:translate-y-0">
+                                <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Мой прогресс</a>
+                                <div class="border-t border-slate-100 my-1"></div>
+                                <form action="{% url 'logout' %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Выйти</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn-secondary">Войти</a>
+                        <a href="{% url 'register' %}" class="btn-primary">Начать путь</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Контент -->
+    <main class="flex-grow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Лаконичный футер -->
+    <footer class="bg-white border-t border-slate-200/60 py-10">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <div class="flex justify-center gap-6 mb-6">
+                <a href="#" class="text-slate-400 hover:text-brand-600 transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12c0-5.523-4.477-10-10-10z"></path></svg></a>
+                <!-- Другие иконки по желанию -->
+            </div>
+            <p class="text-slate-400 text-xs font-medium uppercase tracking-[0.2em]">© 2024 AI Roadmap Platform • Built for Future</p>
+        </div>
+    </footer>
+
+</body>
+</html>

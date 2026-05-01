@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-10 px-4">
+    <!-- Заголовок роадмапа -->
+    <div class="text-center mb-16">
+        <h1 class="text-5xl font-black text-slate-900 mb-4 tracking-tight uppercase italic">
+            {{ roadmap.title }}
+        </h1>
+        <div class="h-1.5 w-32 bg-yellow-400 mx-auto rounded-full"></div>
+        <p class="mt-6 text-slate-500 font-medium max-w-lg mx-auto">
+            {{ roadmap.description }}
+        </p>
+    </div>
+
+    <!-- Контейнер для дерева -->
+    <div class="relative">
+        <!-- Вертикальная линия, соединяющая стеки -->
+        <div class="absolute left-1/2 top-0 bottom-0 w-1 bg-slate-200 -translate-x-1/2 z-0"></div>
+
+        <div class="space-y-12 relative z-10">
+            {% for stack in stacks %}
+            <div class="flex flex-col items-center">
+                
+                <!-- Блок Стэка (Центральный узел) -->
+                <div class="relative group">
+                    <div class="
+                        w-64 py-4 px-6 rounded-lg border-4 text-center transition-all duration-300
+                        {% if stack.is_accessible %}
+                            bg-yellow-300 border-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)]
+                        {% else %}
+                            bg-slate-100 border-slate-300 text-slate-400 shadow-[8px_8px_0px_0px_rgba(203,213,225,1)]
+                        {% endif %}
+                    ">
+                        <span class="text-xl font-black uppercase tracking-wider">
+                            {% if not stack.is_accessible %}🔒 {% endif %}{{ stack.title }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Соединительная линия к темам -->
+                {% if stack.children.all %}
+                <div class="w-0.5 h-8 bg-slate-900"></div>
+                
+                <!-- Сетка тем внутри стэка -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
+                    {% for topic in stack.children.all %}
+                    <div class="relative flex flex-col items-center">
+                        <!-- Горизонтальные "плечи" линий (визуально) -->
+                        <div class="h-4 w-0.5 bg-slate-900"></div>
+                        
+                        <a href="{% if topic.is_accessible %}{% url 'node_detail' topic.id %}{% else %}#{% endif %}" 
+                           class="
+                            w-full p-4 rounded-md border-2 text-center font-bold transition-all
+                            {% if topic.is_accessible %}
+                                bg-white border-slate-900 hover:bg-yellow-50 hover:-translate-y-1 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)]
+                            {% else %}
+                                bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed
+                            {% endif %}
+                        ">
+                            {{ topic.title }}
+                            {% if topic.is_completed %}
+                            <span class="ml-2 text-green-600">✓</span>
+                            {% endif %}
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Эффект Neubrutalism из roadmap.sh */
+    body {
+        background-color: #ffffff;
+    }
+</style>
+{% endblock %}

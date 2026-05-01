@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load tailwind_filters %}
+
+{% block title %}Вход | AI Roadmap{% endblock %}
+
+{% block content %}
+<div class="min-h-[70vh] flex flex-col justify-center py-1 sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md text-center">
+        <!-- Декоративная иконка над формой -->
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-50 mb-6 border border-brand-100 animate-fade-in">
+            <svg class="w-8 h-8 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+            </svg>
+        </div>
+        <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">С возвращением!</h2>
+        <p class="mt-2 text-sm text-slate-500 font-medium">Продолжи свой путь к мастерству</p>
+    </div>
+
+    <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
+        <!-- Карточка формы -->
+        <div class="bg-white py-10 px-6 shadow-[0_20px_50px_rgba(79,70,229,0.05)] border border-slate-100 sm:rounded-3xl sm:px-12 relative overflow-hidden">
+            
+            <!-- Едва заметный градиент-блик сверху -->
+            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-600 to-violet-500 opacity-20"></div>
+
+            <form method="POST" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Используем crispy-tailwind для рендеринга полей -->
+                <div class="space-y-1">
+                    {{ form|crispy }}
+                </div>
+
+                <div class="flex items-center justify-between text-sm">
+                    <div class="flex items-center">
+                        <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-brand-600 focus:ring-brand-500 border-slate-300 rounded transition-all">
+                        <label for="remember-me" class="ml-2 block text-slate-600 font-medium cursor-pointer">Запомнить меня</label>
+                    </div>
+                    <a href="#" class="font-semibold text-brand-600 hover:text-brand-500 transition-colors">Забыли пароль?</a>
+                </div>
+
+                <div>
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-all duration-200 active:scale-[0.98]">
+                        Войти в аккаунт
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-8">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-slate-100"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-slate-400 font-medium italic">или</span>
+                    </div>
+                </div>
+
+                <div class="mt-6 text-center">
+                    <p class="text-sm text-slate-500 font-medium">
+                        Впервые у нас? 
+                        <a href="{% url 'register' %}" class="text-brand-600 hover:text-brand-500 font-bold transition-colors">Создать профиль</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ссылка на главную -->
+        <p class="mt-8 text-center text-xs text-slate-400 font-medium uppercase tracking-widest">
+            <a href="{% url 'roadmap_list' %}" class="hover:text-brand-600 flex items-center justify-center gap-1 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Вернуться на главную
+            </a>
+        </p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ node.title }} | AI Roadmap{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-10 px-4">
+    
+    <!-- Навигация назад -->
+    <a href="{% url 'roadmap_list' %}" class="inline-flex items-center gap-2 text-slate-500 hover:text-brand-600 font-medium mb-12 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        Назад к Роадмапу
+    </a>
+
+    <!-- АДМИН-ПАНЕЛЬ: Генерация уроков (видна только персоналу) -->
+    <!-- АДМИН-ПАНЕЛЬ: Генерация уроков (видна ТОЛЬКО персоналу) -->
+{% if request.user.is_staff %}
+<div id="admin-ai-panel" class="mb-16 bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-6 shadow-sm">
+    <div class="flex items-center gap-3 mb-4">
+        <span class="text-2xl">🤖</span>
+        <h3 class="text-lg font-bold text-indigo-900">AI-Генератор Уроков</h3>
+    </div>
+    <p class="text-sm text-indigo-700 mb-4">
+        Введите название новой саб-темы. Groq ИИ мгновенно создаст контент.
+    </p>
+    
+    <form id="ai-generator-form" class="flex gap-4" onsubmit="event.preventDefault(); generateSubtopic();">
+        <input type="text" id="new-subtopic-title" placeholder="Например: Декораторы в Python..." class="flex-grow px-4 py-3 rounded-xl border border-indigo-200 focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium text-slate-700">
+        <button type="submit" class="bg-brand-600 text-white px-6 py-3 rounded-xl font-bold uppercase tracking-wide hover:bg-brand-700 transition-colors shadow-md flex items-center gap-2">
+            Сгенерировать 
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        </button>
+    </form>
+    
+    <div id="ai-loading" class="hidden mt-4 text-sm font-bold text-indigo-600 animate-pulse">
+        <span class="inline-block mr-2">⏳</span> ИИ Groq генерирует структуру урока...
+    </div>
+</div>
+{% endif %}
+
+    <!-- ДЕРЕВО УРОКОВ (Стиль Roadmap.sh) -->
+    <div class="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16 relative">
+        
+        <!-- Центральная вертикальная/горизонтальная линия (визуальная) -->
+        <div class="absolute hidden md:block w-full h-0.5 bg-slate-300 top-1/2 -z-10"></div>
+        <div class="absolute md:hidden w-0.5 h-full bg-slate-300 left-1/2 -z-10"></div>
+
+        <!-- ЛЕВАЯ КОЛОНКА -->
+        <div class="flex flex-col gap-4 w-full md:w-1/3 items-end">
+            {% for sub in left_subtopics %}
+            <a href="#" class="w-full text-right p-4 bg-white border-2 border-slate-900 rounded-lg shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(15,23,42,1)] transition-all font-bold text-slate-800">
+                {{ sub.title }}
+            </a>
+            {% endfor %}
+        </div>
+
+        <!-- ЦЕНТРАЛЬНЫЙ БЛОК (Текущая Тема) -->
+        <div class="z-10 bg-yellow-300 border-4 border-slate-900 px-8 py-6 rounded-xl shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] text-center min-w-[250px]">
+            <h1 class="text-2xl font-black uppercase tracking-tight text-slate-900">{{ node.title }}</h1>
+        </div>
+
+        <!-- ПРАВАЯ КОЛОНКА -->
+        <div class="flex flex-col gap-4 w-full md:w-1/3 items-start">
+            {% for sub in right_subtopics %}
+            <a href="#" class="w-full text-left p-4 bg-white border-2 border-slate-900 rounded-lg shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(15,23,42,1)] transition-all font-bold text-slate-800">
+                {{ sub.title }}
+            </a>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+
+<script>
+    async function generateSubtopic() {
+    const titleInput = document.getElementById('new-subtopic-title');
+    const title = titleInput.value;
+    const loading = document.getElementById('ai-loading');
+    
+    if (!title) return alert("Введите название темы!");
+
+    // Показываем лоадер, блокируем ввод
+    loading.classList.remove('hidden');
+    titleInput.disabled = true;
+
+    try {
+        const response = await fetch("{% url 'generate_subtopic_api' node.pk %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ title: title })
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            // Вместо перезагрузки можно просто добавить элемент в DOM,
+            // но для простоты — обновим страницу, чтобы увидеть результат в дереве
+            window.location.reload();
+        } else {
+            alert("Ошибка ИИ: " + data.message);
+        }
+    } catch (error) {
+        console.error("Ошибка запроса:", error);
+        alert("Не удалось связаться с сервером.");
+    } finally {
+        loading.classList.add('hidden');
+        titleInput.disabled = false;
+    }
+}
+</script>
+{% endblock %}

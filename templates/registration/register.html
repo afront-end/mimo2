@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load tailwind_filters %}
+
+{% block title %}Регистрация | AI Roadmap{% endblock %}
+
+{% block content %}
+<div class="min-h-[75vh] flex flex-col justify-center sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md text-center">
+        <!-- Иконка регистрации (User Plus) -->
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-50 mb-6 border border-indigo-100 animate-fade-in">
+            <svg class="w-8 h-8 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+            </svg>
+        </div>
+        <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Создать аккаунт</h2>
+        <p class="mt-2 text-sm text-slate-500 font-medium">Начни свой путь к карьере в IT прямо сейчас</p>
+    </div>
+
+    <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
+        <!-- Карточка формы -->
+        <div class="bg-white py-9 px-6 shadow-[0_20px_50px_rgba(79,70,229,0.05)] border border-slate-100 sm:rounded-3xl sm:px-12 relative overflow-hidden">
+            
+            <!-- Декоративная полоска сверху -->
+            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-500 to-brand-600 opacity-20"></div>
+
+            <form method="POST" class="space-y-2">
+                {% csrf_token %}
+                
+                <!-- Обертка для crispy-полей, чтобы добавить им немного отступа -->
+                <div class="space-y-3">
+                    {{ form|crispy }}
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-all duration-200 active:scale-[0.98]">
+                        Присоединиться к платформе
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-8">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-slate-100"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-slate-400 font-medium italic">уже с нами?</span>
+                    </div>
+                </div>
+
+                <div class="mt-6 text-center">
+                    <p class="text-sm text-slate-500 font-medium">
+                        Уже есть аккаунт? 
+                        <a href="{% url 'login' %}" class="text-brand-600 hover:text-brand-500 font-bold transition-colors">Войти в систему</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Дополнительная информация/футер формы -->
+        <div class="mt-8 text-center">
+            <p class="text-xs text-slate-400 leading-relaxed px-4">
+                Регистрируясь, вы соглашаетесь с тем, что ваш код будет проверяться искусственным интеллектом для вашего же блага 🤖
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
