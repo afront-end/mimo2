@@ -13,10 +13,19 @@ class UserRegisterForm(UserCreationForm):
         super(UserRegisterForm, self).__init__(*args, **kwargs)
         for field_name, field in self.fields.items():
             field.help_text = None
-            # Добавляем красивые подсказки внутрь полей
             if field_name == 'username':
                 field.widget.attrs['placeholder'] = 'Придумайте никнейм'
             elif field_name == 'email':
                 field.widget.attrs['placeholder'] = 'example@mail.com'
             elif 'password' in field_name:
                 field.widget.attrs['placeholder'] = '••••••••'
+
+class VerificationForm(forms.Form):
+    code = forms.CharField(
+        max_length=6,
+        min_length=6,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control text-center tracking-widest font-bold text-2xl',
+            'placeholder': '000000'
+        })
+    )

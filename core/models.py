@@ -1,11 +1,31 @@
 from django.db import models
 from django.contrib.auth.models import User
+import random
+from django.core.mail import send_mail
+from django.conf import settings
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')    
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True, verbose_name="Аватар")
     bio = models.TextField(max_length=500, blank=True, verbose_name="О себе")
     points = models.IntegerField(default=0, verbose_name="Баллы опыта")
+
+    is_verified = models.BooleanField(default=False, verbose_name="Почта подтверждена")
+    verification_code = models.CharField(max_length=6, blank=True, null=True, verbose_name="Код подтверждения")
+
+    def generate_and_send_code(self):
+        """Генерирует код, сохраняет в базу и отправляет на почту"""
+        code = str(random.randint(100000, 999999))
+        self.verification_code = code
+        self.save()
+
+        send_mail(
+            subject="Ваш код подтверждения",
+            message=f"Привет! Твой код: {code}",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[self.user.email],
+            fail_silently=False,
+        )
 
     def __str__(self):
         return f"Профиль {self.user.username}"

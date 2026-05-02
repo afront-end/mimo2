@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_tailwind',
     'core.apps.CoreConfig',
+    # 'django.contrib.markdown',
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
@@ -137,3 +138,15 @@ LOGIN_URL = 'login'  # Используем имя (name='login') из твое�
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Для продакшена (пример Gmail)
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 5872
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'airoadmap@gmail.com'
+# EMAIL_HOST_PASSWORD = 'your-app-password'
