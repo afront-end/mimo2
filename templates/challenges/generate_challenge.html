@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-16 animate-fade-in">
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        
+        <!-- Левая колонка: Инфо и Визуал -->
+        <div class="hidden md:block">
+            <div class="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-brand-50 text-brand-600 border border-brand-100 mb-6">
+                <span class="relative flex h-3 w-3">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-3 w-3 bg-brand-600"></span>
+                </span>
+                <span class="text-xs font-black uppercase tracking-widest">AI Lab v2.0</span>
+            </div>
+            
+            <h1 class="text-5xl font-black text-slate-900 tracking-tight leading-tight mb-6">
+                Создайте задачу за <span class="text-brand-600 italic">секунды</span>
+            </h1>
+            
+            <p class="text-lg text-slate-500 font-medium leading-relaxed mb-8">
+                Выберите параметры, и наш ИИ сгенерирует уникальное упражнение с условием в Markdown, стартовым кодом и системой автопроверки.
+            </p>
+
+            <ul class="space-y-4">
+                <li class="flex items-center gap-3 text-slate-600 font-bold">
+                    <div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    Уникальные условия каждый раз
+                </li>
+                <li class="flex items-center gap-3 text-slate-600 font-bold">
+                    <div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    Готовый шаблон кода
+                </li>
+            </ul>
+        </div>
+
+        <!-- Правая колонка: Форма -->
+        <div class="relative">
+            <!-- Декор фона -->
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-brand-200 rounded-full blur-3xl opacity-20"></div>
+            <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo-200 rounded-full blur-3xl opacity-20"></div>
+
+            <div class="relative bg-white rounded-[3rem] shadow-2xl shadow-slate-200/60 border border-slate-100 p-8 md:p-12">
+                <div class="flex items-center gap-4 mb-10 md:hidden">
+                     <h1 class="text-2xl font-black text-slate-900">Генератор задач</h1>
+                </div>
+
+                <form method="post" class="challenge-gen-form">
+                    {% csrf_token %}
+                    
+                    <div class="space-y-6">
+                        {{ form|crispy }}
+                    </div>
+
+                    <button type="submit" id="generate-btn" class="group relative w-full mt-10 bg-slate-900 text-white font-black py-5 rounded-2xl hover:bg-brand-600 active:scale-[0.98] transition-all overflow-hidden shadow-xl shadow-slate-900/20">
+                        <span class="relative z-10 flex items-center justify-center gap-3 tracking-widest uppercase text-xs">
+                            <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            Сгенерировать магию
+                        </span>
+                    </button>
+                </form>
+                
+                <p class="mt-6 text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                    Процесс занимает от 3 до 10 секунд
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Кастомизация полей Crispy Forms */
+    .challenge-gen-form label {
+        font-weight: 900 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.1em !important;
+        font-size: 11px !important;
+        color: #64748b !important;
+        margin-bottom: 0.75rem !important;
+        display: block !important;
+    }
+
+    .challenge-gen-form select {
+        appearance: none !important;
+        background-color: #f8fafc !important;
+        border: 2px solid #f1f5f9 !important;
+        border-radius: 1.25rem !important;
+        padding: 1rem 1.25rem !important;
+        font-weight: 700 !important;
+        color: #1e293b !important;
+        width: 100% !important;
+        transition: all 0.2s ease !important;
+        cursor: pointer !important;
+    }
+
+    .challenge-gen-form select:focus {
+        background-color: #fff !important;
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1) !important;
+        outline: none !important;
+    }
+
+    /* Анимация появления */
+    @keyframes fade-in {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+        animation: fade-in 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    /* Состояние загрузки (для красоты) */
+    #generate-btn.loading {
+        pointer-events: none;
+        opacity: 0.8;
+    }
+</style>
+
+<script>
+    // Простой скрипт, чтобы показать пользователю, что что-то происходит после клика
+    document.querySelector('form').onsubmit = function() {
+        const btn = document.getElementById('generate-btn');
+        btn.classList.add('loading');
+        btn.innerHTML = '<span class="flex items-center gap-3 tracking-widest uppercase text-xs"><svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Нейросеть думает...</span>';
+    };
+</script>
+{% endblock %}

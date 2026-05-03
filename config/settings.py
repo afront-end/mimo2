@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_tailwind',
     'core.apps.CoreConfig',
+    'challenges.apps.ChallengesConfig',
     # 'django.contrib.markdown',
 ]
 
@@ -139,6 +140,8 @@ LOGIN_URL = 'login'  # Используем имя (name='login') из твое�
 
 STATIC_URL = 'static/'
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

@@ -10,7 +10,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Alpine.js (Для выпадающих меню и модалок) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -21,6 +25,7 @@
                         brand: {
                             50: '#f5f7ff',
                             100: '#ebf0fe',
+                            500: '#6366f1',
                             600: '#4f46e5', // Indigo
                             700: '#4338ca',
                             900: '#1e1b4b',
@@ -41,18 +46,15 @@
     </script>
 
     <style type="text/tailwindcss">
-        .asteriskField {
-        display: none !important;
-        }
-
+        .asteriskField { display: none !important; }
 
         @layer base {
             body { @apply bg-[#fcfcfd] text-slate-900 antialiased; }
         }
         @layer components {
-            .nav-link { @apply text-sm font-medium text-slate-600 hover:text-brand-600 transition-colors duration-200; }
-            .btn-primary { @apply bg-brand-600 text-white px-5 py-2.5 rounded-full font-semibold text-sm hover:bg-brand-700 hover:shadow-lg hover:shadow-brand-600/20 transition-all duration-300 active:scale-95; }
-            .btn-secondary { @apply bg-white text-slate-700 px-5 py-2.5 rounded-full font-semibold text-sm border border-slate-200 hover:bg-slate-50 transition-all duration-300; }
+            .nav-link { @apply text-sm font-bold text-slate-500 hover:text-brand-600 transition-colors duration-200; }
+            .btn-primary { @apply bg-brand-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-brand-700 hover:shadow-lg hover:shadow-brand-600/20 transition-all duration-300 active:scale-95; }
+            .btn-secondary { @apply bg-white text-slate-700 px-5 py-2.5 rounded-xl font-bold text-sm border border-slate-200 hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all duration-300 active:scale-95; }
             .glass-card { @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]; }
         }
         /* Кастомный скроллбар */
@@ -62,7 +64,28 @@
         ::-webkit-scrollbar-thumb:hover { background: #a5b4fc; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col relative" x-data="{ mobileMenuOpen: false }">
+
+    <!-- Глобальные уведомления Django (Toasts) -->
+    {% if messages %}
+        <div class="fixed top-20 right-4 z-[60] flex flex-col gap-3 pointer-events-none w-full max-w-sm">
+            {% for message in messages %}
+                <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
+                     x-transition:enter="transition ease-out duration-300 transform"
+                     x-transition:enter-start="translate-x-full opacity-0"
+                     x-transition:enter-end="translate-x-0 opacity-100"
+                     x-transition:leave="transition ease-in duration-200 transform"
+                     x-transition:leave-start="translate-x-0 opacity-100"
+                     x-transition:leave-end="translate-x-full opacity-0"
+                     class="pointer-events-auto bg-white p-4 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] border-l-4 {% if message.tags == 'error' %}border-red-500{% elif message.tags == 'success' %}border-green-500{% else %}border-brand-500{% endif %} flex justify-between items-start">
+                    <p class="text-sm font-bold text-slate-700">{{ message }}</p>
+                    <button @click="show = false" class="text-slate-400 hover:text-slate-600 focus:outline-none">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 
     <!-- Фоновые градиенты (Аура) -->
     <div class="fixed inset-0 z-[-1] pointer-events-none overflow-hidden">
@@ -75,11 +98,11 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex h-16 items-center justify-between">
                 
-                <!-- Логотип -->
+                <!-- Логотип и ссылки -->
                 <div class="flex items-center gap-8">
-                    <a href="{% url 'roadmap_list' %}" class="flex items-center gap-2.5 group">
+                    <a href="{% url 'roadmap_list' %}" class="flex items-center gap-2.5 group outline-none">
                         <div class="relative">
-                            <div class="absolute -inset-1 bg-gradient-to-r from-brand-600 to-violet-500 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                            <div class="absolute -inset-1 bg-gradient-to-r from-brand-600 to-violet-500 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-300"></div>
                             <div class="relative bg-white p-1.5 rounded-lg border border-slate-100">
                                 <svg class="w-6 h-6 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                             </div>
@@ -92,32 +115,49 @@
                     <!-- Десктопное меню -->
                     <nav class="hidden md:flex items-center gap-6">
                         <a href="{% url 'roadmap_list' %}" class="nav-link">Все курсы</a>
-                        <a href="#" class="nav-link">Сообщество</a>
+                        <a href="{% url 'challenge_list' %}" class="nav-link">Coding challenges</a>
                     </nav>
                 </div>
 
-                <!-- Блок авторизации -->
-                <div class="flex items-center gap-3">
+                <!-- Блок пользователя -->
+                <div class="hidden md:flex items-center gap-4">
                     {% if user.is_authenticated %}
-                        <div class="hidden sm:flex flex-col items-end mr-2">
-                            <span class="text-xs font-bold text-slate-900 leading-none">{{ user.username }}</span>
-                            <span class="text-[10px] font-medium text-brand-600 uppercase tracking-widest mt-1">Lvl. {{ user.profile.points|default:"0" }}</span>
+                        <div class="flex flex-col items-end mr-1">
+                            <span class="text-xs font-extrabold text-slate-900 leading-none">{{ user.username }}</span>
+                            <span class="text-[10px] font-bold text-brand-600 uppercase tracking-widest mt-1">Lvl. {{ user.profile.points|default:"0" }}</span>
                         </div>
                         
-                        <!-- Мини-профиль -->
-                        <div class="relative group">
-                            <button class="flex items-center gap-2 p-1 rounded-full border border-slate-200 bg-white hover:border-brand-300 transition-all">
-                                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-600 to-violet-500 text-white flex items-center justify-center font-bold text-xs">
-                                    {{ user.username|slice:":1"|upper }}
-                                </div>
+                        <!-- Выпадающее меню профиля (Alpine.js) -->
+                        <div class="relative" x-data="{ profileMenuOpen: false }">
+                            <button @click="profileMenuOpen = !profileMenuOpen" @click.away="profileMenuOpen = false" class="flex items-center gap-2 p-1 rounded-full border-2 border-slate-200 bg-white hover:border-brand-300 focus:outline-none focus:border-brand-500 transition-all">
+                                {% if user.profile.avatar %}
+                                    <img src="{{ user.profile.avatar.url }}" alt="Аватар" class="w-8 h-8 rounded-full object-cover">
+                                {% else %}
+                                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-600 to-violet-500 text-white flex items-center justify-center font-bold text-xs shadow-inner">
+                                        {{ user.username|slice:":1"|upper }}
+                                    </div>
+                                {% endif %}
                             </button>
-                            <!-- Выпадающее меню (упрощенное) -->
-                            <div class="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-2xl shadow-xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 translate-y-2 group-hover:translate-y-0">
-                                <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Мой прогресс</a>
+                            
+                            <!-- Dropdown content -->
+                            <div x-show="profileMenuOpen" 
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:enter-start="transform opacity-0 scale-95"
+                                 x-transition:enter-end="transform opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="transform opacity-100 scale-100"
+                                 x-transition:leave-end="transform opacity-0 scale-95"
+                                 class="absolute right-0 mt-2 w-56 bg-white border border-slate-100 rounded-2xl shadow-xl py-2 z-50" style="display: none;">
+                                
+                                <div class="px-4 py-3 border-b border-slate-100 mb-1">
+                                    <p class="text-sm font-medium text-slate-900 truncate">{{ user.email }}</p>
+                                </div>
+                                <a href="{% url 'profile' %}" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-brand-600">Настройки профиля</a>
+                                <a href="#" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-brand-600">Мой прогресс</a>
                                 <div class="border-t border-slate-100 my-1"></div>
-                                <form action="{% url 'logout' %}" method="post">
+                                <form action="{% url 'logout' %}" method="post" class="w-full">
                                     {% csrf_token %}
-                                    <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Выйти</button>
+                                    <button type="submit" class="w-full text-left px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50">Выйти из аккаунта</button>
                                 </form>
                             </div>
                         </div>
@@ -126,27 +166,78 @@
                         <a href="{% url 'register' %}" class="btn-primary">Начать путь</a>
                     {% endif %}
                 </div>
+
+                <!-- Кнопка гамбургера (Мобилка) -->
+                <div class="md:hidden flex items-center">
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="p-2 rounded-lg text-slate-600 hover:bg-slate-100 focus:outline-none">
+                        <svg x-show="!mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                        <svg x-show="mobileMenuOpen" style="display: none;" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Выпадающее мобильное меню -->
+        <div x-show="mobileMenuOpen" class="md:hidden border-t border-slate-100 bg-white" style="display: none;">
+            <div class="px-4 pt-2 pb-6 space-y-1">
+                <a href="{% url 'roadmap_list' %}" class="block px-3 py-2 rounded-xl text-base font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-600">Все курсы</a>
+                <a href="#" class="block px-3 py-2 rounded-xl text-base font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-600">Сообщество</a>
+                
+                <div class="border-t border-slate-100 pt-4 mt-4">
+                    {% if user.is_authenticated %}
+                        <div class="flex items-center px-3 mb-4">
+                            {% if user.profile.avatar %}
+                                <img src="{{ user.profile.avatar.url }}" alt="Аватар" class="w-10 h-10 rounded-full object-cover">
+                            {% else %}
+                                <div class="w-10 h-10 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold">
+                                    {{ user.username|slice:":1"|upper }}
+                                </div>
+                            {% endif %}
+                            <div class="ml-3">
+                                <div class="text-base font-extrabold text-slate-900">{{ user.username }}</div>
+                                <div class="text-xs font-bold text-brand-600">Lvl. {{ user.profile.points|default:"0" }}</div>
+                            </div>
+                        </div>
+                        <a href="{% url 'profile' %}" class="block px-3 py-2 rounded-xl text-base font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-600">Профиль</a>
+                        <form action="{% url 'logout' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="w-full text-left px-3 py-2 rounded-xl text-base font-bold text-red-600 hover:bg-red-50">Выйти</button>
+                        </form>
+                    {% else %}
+                        <div class="grid grid-cols-2 gap-4 px-3">
+                            <a href="{% url 'login' %}" class="btn-secondary text-center">Войти</a>
+                            <a href="{% url 'register' %}" class="btn-primary text-center">Начать</a>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </header>
 
     <!-- Контент -->
     <main class="flex-grow">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <!-- Анимация появления контента -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-fade-in transition-all duration-500">
             {% block content %}{% endblock %}
         </div>
     </main>
 
     <!-- Лаконичный футер -->
-    <footer class="bg-white border-t border-slate-200/60 py-10">
+    <footer class="bg-white border-t border-slate-200/60 py-10 mt-auto">
         <div class="max-w-7xl mx-auto px-4 text-center">
-            <div class="flex justify-center gap-6 mb-6">
-                <a href="#" class="text-slate-400 hover:text-brand-600 transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12c0-5.523-4.477-10-10-10z"></path></svg></a>
-                <!-- Другие иконки по желанию -->
-            </div>
-            <p class="text-slate-400 text-xs font-medium uppercase tracking-[0.2em]">© 2024 AI Roadmap Platform • Built for Future</p>
+            <p class="text-slate-400 text-xs font-extrabold uppercase tracking-[0.2em]">© 2024 AI Roadmap Platform • Built for Future</p>
         </div>
     </footer>
 
+    <!-- Кастомные стили для анимаций -->
+    <style>
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </body>
 </html>

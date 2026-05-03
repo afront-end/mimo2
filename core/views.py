@@ -16,6 +16,8 @@ from django.contrib.auth import login
 load_dotenv()
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
+# Authentication
+
 class RegisterView(CreateView):
     form_class = UserRegisterForm
     template_name = 'registration/register.html'
@@ -56,6 +58,142 @@ class MyLoginView(LoginView):
                 user.profile.generate_and_send_code()
             return reverse_lazy('verify')
         return super().get_success_url()
+
+
+# Profile
+from django.db.models import Avg, Count, Q
+from .models import Roadmap, UserProgress, Submission
+
+class ProfileView(LoginRequiredMixin, DetailView):
+    template_name = 'profile/dashboard.html'
+    context_object_name = 'profile'
+
+    def get_object(self):
+        return self.request.user.profile
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        # 1. Прогресс по Roadmap (для каждого курса)
+        roadmaps_stats = []
+        for roadmap in Roadmap.objects.all():
+            total_nodes = roadmap.nodes.count()
+            completed_nodes = UserProgress.objects.filter(
+                user=user, 
+                node__roadmap=roadmap, 
+                is_completed=True
+            ).count()
+            
+            percent = int((completed_nodes / total_nodes) * 100) if total_nodes > 0 else 0
+            
+            # Находим текущий этап (первый не пройденный)
+            current_node = roadmap.nodes.exclude(
+                id__in=UserProgress.objects.filter(user=user, is_completed=True).values_list('node_id', flat=True)
+            ).first()
+
+            roadmaps_stats.append({
+                'title': roadmap.title,
+                'percent': percent,
+                'current_step': current_node.title if current_node else "Завершено! 🎉"
+            })
+        
+        context['roadmaps_stats'] = roadmaps_stats
+
+        # 2. История AI-проверок (последние 5)
+        context['recent_submissions'] = Submission.objects.filter(user=user).order_by('-created_at')[:5]
+
+        # 3. Аналитика
+        stats = Submission.objects.filter(user=user).aggregate(
+            avg_score=Avg('ai_score'),
+            total_attempts=Count('id'),
+            success_rate=Count('id', filter=Q(is_passed=True))
+        )
+        
+        if stats['total_attempts'] > 0:
+            stats['success_percent'] = int((stats['success_rate'] / stats['total_attempts']) * 100)
+        else:
+            stats['success_percent'] = 0
+            
+        context['analytics'] = stats
+
+        return context
+    
+class SettingsView(LoginRequiredMixin, View):
+    def get(self, request):
+        user_form = UserUpdateForm(instance=request.user)
+        profile_form = ProfileUpdateForm(instance=request.user.profile)
+        print('User',user_form)
+        return render(request, 'profile/settings.html', {
+            'user_form': user_form,
+            'profile_form': profile_form
+        })
+
+    def post(self, request):
+        user_form = UserUpdateForm(request.POST, instance=request.user)
+        profile_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
+
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            messages.success(request, 'Профиль успешно обновлен!')
+            return redirect('settings')
+        
+        return render(request, 'profile/settings.html', {
+            'user_form': user_form,
+            'profile_form': profile_form
+        }) 
+
+class SubmissionListView(LoginRequiredMixin, ListView):
+    model = Submission
+    template_name = 'profile/submissions.html'
+    context_object_name = 'submissions'
+    paginate_by = 10
+
+    def get_queryset(self):
+        # Показываем только ответы текущего пользователя, сначала новые
+        return Submission.objects.filter(user=self.request.user).order_by('-created_at')
+    
+class LeaderboardView(ListView):
+    model = Profile
+    template_name = 'profile/leaderboard.html'
+    context_object_name = 'profiles' # общее имя для всех профилей
+    
+    def get_queryset(self):
+        # Возвращаем топ-50 по очкам
+        return Profile.objects.order_by('-points')[:50]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        all_profiles = self.get_queryset()
+        
+        # Разбиваем на логические группы для шаблона
+        context['podium'] = all_profiles[:3]  # Топ-3
+        context['others'] = all_profiles[3:]  # Остальные (с 4-го места)
+        return context
+
+class UserProfileDetailView(DetailView):
+    model = User
+    template_name = 'profile/public_profile.html'
+    context_object_name = 'viewed_user'
+
+    def get_object(self):
+        return get_object_or_404(User, username=self.kwargs.get('username'))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        viewed_user = self.get_object()
+        
+        # Добавляем в контекст данные профиля и последние достижения
+        context['profile'] = viewed_user.profile
+        context['recent_submissions'] = Submission.objects.filter(
+            user=viewed_user, 
+            is_passed=True
+        ).order_by('-created_at')[:5]
+        
+        return context
+
+# Roadmap and AI-actions
 
 class RoadmapListView(ListView):
     model = Roadmap
@@ -307,7 +445,7 @@ class CheckSubmissionView(LoginRequiredMixin, View):
             return redirect('subtopic_detail', pk=node.id)
         
         question = node.content
-        specialty = node.roadmap.titleв
+        specialty = node.roadmap.title
         result = evaluate_node_answer(question, answer_text, specialty=specialty)
         score = result['score']
         feedback = result['feedback']

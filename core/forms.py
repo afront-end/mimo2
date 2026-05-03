@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
+from .models import *
 
 class UserRegisterForm(UserCreationForm):
     email = forms.EmailField(required=True, help_text="Введите валидный email")
@@ -29,3 +30,17 @@ class VerificationForm(forms.Form):
             'placeholder': '000000'
         })
     )
+
+
+class UserUpdateForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'email']
+
+class ProfileUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['avatar', 'bio']
+        widgets = {
+            'bio': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Расскажите немного о себе...'}),
+        }

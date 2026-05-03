@@ -1,0 +1,122 @@
+{% extends 'profile/profile_base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Настройки профиля | AI Roadmap{% endblock %}
+
+{% block profile_content %}
+<div class="max-w-3xl animate-fade-in">
+    
+    <!-- Заголовок секции -->
+    <div class="mb-8">
+        <h2 class="text-3xl font-black text-slate-900 tracking-tight">Настройки</h2>
+        <p class="text-slate-500 font-medium mt-1">Управляй своими данными и внешним видом профиля</p>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="space-y-8">
+        {% csrf_token %}
+
+        <!-- СЕКЦИЯ 1: ВИЗУАЛ -->
+        <div class="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-brand-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+            
+            <h3 class="relative text-lg font-black text-slate-900 mb-6 flex items-center gap-2">
+                <span class="w-8 h-8 rounded-lg bg-brand-600 text-white flex items-center justify-center text-xs">01</span>
+                Внешний вид
+            </h3>
+
+            <div class="relative flex flex-col md:flex-row items-center gap-8">
+                <!-- Интерактивное превью аватара -->
+                <div class="relative group/avatar">
+                    <div class="absolute -inset-2 bg-gradient-to-tr from-brand-600 to-violet-600 rounded-[2.5rem] opacity-20 blur-sm group-hover/avatar:opacity-40 transition-opacity"></div>
+                    {% if user.profile.avatar %}
+                        <img src="{{ user.profile.avatar.url }}" id="avatar-preview" class="relative w-32 h-32 rounded-[2rem] object-cover border-4 border-white shadow-xl">
+                    {% else %}
+                        <div id="avatar-placeholder" class="relative w-32 h-32 rounded-[2rem] bg-slate-100 border-4 border-white flex items-center justify-center text-slate-400 shadow-xl">
+                            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        </div>
+                    {% endif %}
+                    <label for="id_avatar" class="absolute bottom-0 right-0 bg-slate-900 text-white p-2 rounded-xl cursor-pointer hover:bg-brand-600 transition-colors shadow-lg border-2 border-white">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    </label>
+                </div>
+
+                <div class="flex-grow space-y-2 w-full">
+                    <div class="hidden">
+                        {{ profile_form.avatar }}
+                    </div>
+                    <h4 class="font-bold text-slate-900">Загрузить новое фото</h4>
+                    <p class="text-xs text-slate-500 font-medium leading-relaxed">Рекомендуем квадратное изображение (PNG или JPG) размером не менее 400x400px. Максимальный вес — 5MB.</p>
+                    <button type="button" onclick="document.getElementById('id_avatar').click()" class="mt-2 text-xs font-black text-brand-600 uppercase tracking-widest hover:text-brand-700 transition-colors">Выбрать файл</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- СЕКЦИЯ 2: ОСНОВНЫЕ ДАННЫЕ -->
+        <div class="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm">
+            <h3 class="text-lg font-black text-slate-900 mb-8 flex items-center gap-2">
+                <span class="w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center text-xs">02</span>
+                Личная информация
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="md:col-span-1">
+                    {{ user_form.username|as_crispy_field }}
+                </div>
+                <div class="md:col-span-1">
+                    {{ user_form.email|as_crispy_field }}
+                </div>
+                <div class="md:col-span-2">
+                    {{ profile_form.bio|as_crispy_field }}
+                </div>
+            </div>
+        </div>
+
+        <!-- КНОПКА СОХРАНЕНИЯ -->
+        <div class="flex items-center justify-between p-4 bg-slate-50 rounded-3xl border border-slate-100">
+            <p class="text-xs font-bold text-slate-500 ml-4">
+                <svg class="w-4 h-4 inline mr-1 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Не забудь сохранить изменения перед уходом
+            </p>
+            <button type="submit" class="btn-primary !py-4 !px-12 shadow-xl shadow-brand-600/20 active:scale-95 transition-all">
+                Сохранить всё
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- JS для живого превью аватара -->
+<script>
+    document.getElementById('id_avatar').onchange = function (evt) {
+        var tgt = evt.target || window.event.srcElement,
+            files = tgt.files;
+        
+        if (FileReader && files && files.length) {
+            var fr = new FileReader();
+            fr.onload = function () {
+                const img = document.getElementById('avatar-preview');
+                if(img) {
+                    img.src = fr.result;
+                } else {
+                    location.reload(); // Если аватара не было, просто обновим для простоты
+                }
+            }
+            fr.readAsDataURL(files[0]);
+        }
+    }
+</script>
+
+<style type="text/tailwindcss">
+    @layer components {
+        /* Кастомные стили для полей ввода внутри настроек */
+        .form-control, input[type="text"], input[type="email"], textarea {
+            @apply w-full !rounded-2xl !border-slate-100 !bg-slate-50 !px-5 !py-4 !text-sm !font-semibold !text-slate-900 !transition-all focus:!bg-white focus:!border-brand-600 focus:!ring-4 focus:!ring-brand-50;
+        }
+        label {
+            @apply !text-[11px] !font-black !text-slate-400 !uppercase !tracking-widest !mb-2 !block;
+        }
+        .help-block {
+            @apply !text-[10px] !text-slate-400 !mt-2;
+        }
+    }
+</style>
+{% endblock %}

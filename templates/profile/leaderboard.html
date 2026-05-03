@@ -1,0 +1,121 @@
+{% extends 'profile/profile_base.html' %}
+
+{% block title %}Лига лидеров | AI Roadmap{% endblock %}
+
+{% block profile_content %}
+<div class="animate-fade-in space-y-12">
+    
+    <!-- Заголовок -->
+    <div class="text-center max-w-2xl mx-auto">
+        <h2 class="text-4xl font-black text-slate-900 tracking-tight">Лига Лидеров</h2>
+        <p class="text-slate-500 font-medium mt-2">Стань лучшим в изучении ИИ и займи свое место на пьедестале</p>
+    </div>
+
+    <!-- ПЬЕДЕСТАЛ (ТОП-3) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end max-w-4xl mx-auto px-4">
+        
+        <!-- 2 МЕСТО -->
+        {% if podium.1 %}
+        <div class="order-2 md:order-1 flex flex-col items-center group">
+            <div class="relative mb-4">
+                <a href="{% url 'user_profile' username=podium.1.user.username %}" class="absolute -inset-1 bg-slate-300 rounded-full blur opacity-25 group-hover:opacity-50 transition"></a>
+                {% if podium.1.avatar %}
+                    <img src="{{ podium.1.avatar.url }}" class="relative w-24 h-24 rounded-full border-4 border-slate-200 object-cover">
+                {% else %}
+                    <div class="relative w-24 h-24 rounded-full bg-slate-100 border-4 border-slate-200 flex items-center justify-center text-2xl font-black text-slate-400">2</div>
+                {% endif %}
+                <div class="absolute -bottom-2 -right-2 bg-slate-400 text-white w-8 h-8 rounded-lg flex items-center justify-center font-black shadow-lg">2</div>
+            </div>
+            <div class="bg-white p-6 rounded-t-[2rem] w-full text-center border-x border-t border-slate-100 shadow-sm min-h-[140px] flex flex-col justify-center">
+                <a href="{% url 'user_profile' username=podium.1.user.username %}" class="font-black text-slate-900 truncate">{{ podium.1.user.username }}</a>
+                <p class="text-brand-600 font-black text-lg mt-1">{{ podium.1.points }} <span class="text-[10px] uppercase">XP</span></p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 1 МЕСТО -->
+        {% if podium.0 %}
+        <div class="order-1 md:order-2 flex flex-col items-center group scale-110 md:scale-125 z-10">
+            <div class="relative mb-6">
+                <a href="{% url 'user_profile' username=podium.0.user.username %}" class="absolute -inset-4 bg-amber-400 rounded-full blur-xl opacity-20 group-hover:opacity-40 transition duration-1000"></a>
+                {% if podium.0.avatar %}
+                    <img src="{{ podium.0.avatar.url }}" class="relative w-32 h-32 rounded-full border-4 border-amber-400 object-cover shadow-2xl">
+                {% else %}
+                    <div class="relative w-32 h-32 rounded-full bg-slate-900 border-4 border-amber-400 flex items-center justify-center text-4xl font-black text-amber-400">1</div>
+                {% endif %}
+                <div class="absolute -top-4 left-1/2 -translate-x-1/2 text-3xl animate-bounce">👑</div>
+                <div class="absolute -bottom-2 -right-2 bg-amber-500 text-white w-10 h-10 rounded-xl flex items-center justify-center font-black shadow-xl ring-4 ring-white">1</div>
+            </div>
+            <div class="bg-white p-8 rounded-t-[2.5rem] w-full text-center border-x border-t border-brand-100 shadow-2xl min-h-[160px] flex flex-col justify-center">
+                <a href="{% url 'user_profile' username=podium.0.user.username %}" class="font-black text-slate-900 text-lg truncate">{{ podium.0.user.username }}</a>
+                <p class="text-brand-600 font-black text-2xl mt-1">{{ podium.0.points }} <span class="text-xs uppercase tracking-widest">XP</span></p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 3 МЕСТО -->
+        {% if podium.2 %}
+        <div class="order-3 md:order-3 flex flex-col items-center group">
+            <div class="relative mb-4">
+                <a href="{% url 'user_profile' username=podium.2.user.username %}" class="absolute -inset-1 bg-orange-300 rounded-full blur opacity-25 group-hover:opacity-50 transition"></a>
+                {% if podium.2.avatar %}
+                    <img src="{{ podium.2.avatar.url }}" class="relative w-20 h-20 rounded-full border-4 border-orange-200 object-cover">
+                {% else %}
+                    <div class="relative w-20 h-20 rounded-full bg-slate-100 border-4 border-orange-200 flex items-center justify-center text-xl font-black text-slate-400">3</div>
+                {% endif %}
+                <div class="absolute -bottom-2 -right-2 bg-orange-400 text-white w-7 h-7 rounded-lg flex items-center justify-center font-black shadow-lg">3</div>
+            </div>
+            <div class="bg-white p-6 rounded-t-[2rem] w-full text-center border-x border-t border-slate-100 shadow-sm min-h-[120px] flex flex-col justify-center">
+                <a href="{% url 'user_profile' username=podium.2.user.username %}" class="font-black text-slate-900 truncate">{{ podium.2.user.username }}</af>
+                <p class="text-brand-600 font-black text-lg mt-1">{{ podium.2.points }} <span class="text-[10px] uppercase">XP</span></p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ТАБЛИЦА ОСТАЛЬНЫХ (4+) -->
+    <div class="max-w-4xl mx-auto bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden mb-12">
+        <div class="p-6 border-b border-slate-50 bg-slate-50/30 flex justify-between items-center">
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-12">Студент</span>
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-8">Очки опыта</span>
+        </div>
+        <div class="divide-y divide-slate-50">
+            {% for profile in others %}
+            <div class="flex items-center justify-between p-5 hover:bg-slate-50/80 transition-all group {% if profile.user == request.user %}bg-brand-50/50{% endif %}">
+                <div class="flex items-center gap-6">
+                    <!-- Номер места -->
+                    <span class="w-8 text-center font-black text-slate-300 group-hover:text-brand-600 transition-colors">
+                        {{ forloop.counter|add:3 }}
+                    </span>
+                    <!-- Аватар и имя -->
+                    <div class="flex items-center gap-4">
+                        {% if profile.avatar %}
+                            <img src="{{ profile.avatar.url }}" class="w-10 h-10 rounded-xl object-cover">
+                        {% else %}
+                            <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-400">
+                                {{ profile.user.username|slice:":1"|upper }}
+                            </div>
+                        {% endif %}
+                        <div>
+                            <a href="{% url 'user_profile' username=profile.user.username %}" class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                                {{ profile.user.username }}
+                                {% if profile.user == request.user %}
+                                    <span class="bg-brand-600 text-[8px] text-white px-1.5 py-0.5 rounded uppercase tracking-tighter">Это ты</span>
+                                {% endif %}
+                            </a>
+                            <p class="text-[10px] text-slate-400 font-medium">Топ {{ forloop.counter|add:3 }} платформы</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Очки -->
+                <div class="mr-6">
+                    <span class="text-sm font-black text-slate-900 bg-slate-100 px-4 py-1.5 rounded-xl group-hover:bg-brand-600 group-hover:text-white transition-all">
+                        {{ profile.points }}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

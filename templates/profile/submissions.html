@@ -1,0 +1,142 @@
+{% extends 'profile/profile_base.html' %}
+
+{% block title %}Мои ответы | AI Roadmap{% endblock %}
+
+{% block profile_content %}
+<div class="animate-fade-in">
+    
+    <!-- Заголовок и фильтры -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+            <h2 class="text-3xl font-black text-slate-900 tracking-tight">История решений</h2>
+            <p class="text-slate-500 font-medium mt-1">Все твои попытки и вердикты AI</p>
+        </div>
+        
+        <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-2xl">
+            <button class="px-4 py-2 rounded-xl bg-white shadow-sm text-xs font-black text-slate-900 uppercase tracking-widest">Все</button>
+            <button class="px-4 py-2 rounded-xl text-xs font-black text-slate-500 uppercase tracking-widest hover:text-brand-600 transition-colors">Успешные</button>
+        </div>
+    </div>
+
+    <!-- Таблица ответов -->
+    <div class="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50/50 border-b border-slate-100">
+                        <th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Тема / Урок</th>
+                        <th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Дата</th>
+                        <th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Балл AI</th>
+                        <th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Статус</th>
+                        <th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Действие</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    {% for sub in submissions %}
+                    <tr class="group hover:bg-brand-50/20 transition-colors">
+                        <td class="px-6 py-5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-white group-hover:text-brand-600 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-900">{{ sub.node.title }}</p>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{{ sub.node.roadmap.title }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-5">
+                            <span class="text-xs font-semibold text-slate-500">{{ sub.created_at|date:"d M Y" }}</span>
+                            <span class="block text-[10px] text-slate-400">{{ sub.created_at|date:"H:i" }}</span>
+                        </td>
+                        <td class="px-6 py-5">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-black {% if sub.ai_score >= 70 %}text-emerald-600{% elif sub.ai_score >= 40 %}text-amber-500{% else %}text-red-500{% endif %}">
+                                    {{ sub.ai_score }}%
+                                </span>
+                                <div class="w-12 h-1.5 bg-slate-100 rounded-full overflow-hidden hidden sm:block">
+                                    <!-- <div class="h-full {% if sub.ai_score >= 70 %}bg-emerald-500{% else %}bg-amber-500{% endif %}" style="width: {{ sub.ai_score }}%"></div> -->
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-5">
+                            {% if sub.is_passed %}
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-wider border border-emerald-100">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Принято
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-wider border border-red-100">
+                                <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Доработка
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-5">
+                            <button onclick="toggleFeedback('{{ sub.id }}')" class="p-2 hover:bg-white rounded-xl border border-transparent hover:border-slate-200 text-slate-400 hover:text-brand-600 transition-all">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            </button>
+                        </td>
+                    </tr>
+                    <!-- Скрытый ряд с деталями (раскрывается по клику) -->
+                    <tr id="details-{{ sub.id }}" class="hidden bg-slate-50/50">
+                        <td colspan="5" class="px-8 py-8">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div>
+                                    <h5 class="text-[10px] font-black text-brand-600 uppercase tracking-[0.2em] mb-4">Твой код:</h5>
+                                    <pre class="bg-slate-900 text-slate-300 p-6 rounded-2xl text-xs overflow-x-auto font-mono leading-relaxed border border-slate-800 shadow-inner"><code>{{ sub.code }}</code></pre>
+                                </div>
+                                <div>
+                                    <h5 class="text-[10px] font-black text-brand-600 uppercase tracking-[0.2em] mb-4">Фидбек от AI:</h5>
+                                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                        <p class="text-sm text-slate-700 italic leading-relaxed">"{{ sub.ai_feedback }}"</p>
+                                    </div>
+                                    <div class="mt-6 flex gap-3">
+                                        <a href="{% url 'subtopic_detail' sub.node.id %}" class="btn-primary !text-[10px] !py-2 !px-4">Попробовать снова</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-20 text-center">
+                            <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-dashed border-slate-200">
+                                <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+                            </div>
+                            <p class="text-slate-400 font-bold tracking-tight">Вы еще не отправили ни одного ответа</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Пагинация -->
+    {% if is_paginated %}
+    <div class="flex justify-center mt-8 gap-2">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:border-brand-600 transition-colors italic">←</a>
+        {% endif %}
+        <span class="w-10 h-10 flex items-center justify-center rounded-xl bg-brand-600 text-white font-black text-sm shadow-lg shadow-brand-600/20">{{ page_obj.number }}</span>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:border-brand-600 transition-colors italic">→</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function toggleFeedback(id) {
+        const row = document.getElementById(`details-${id}`);
+        const allRows = document.querySelectorAll('[id^="details-"]');
+        
+        // Закрываем другие открытые ряды
+        allRows.forEach(r => {
+            if (r.id !== `details-${id}`) r.classList.add('hidden');
+        });
+
+        // Переключаем текущий
+        row.classList.toggle('hidden');
+    }
+</script>
+{% endblock %}
